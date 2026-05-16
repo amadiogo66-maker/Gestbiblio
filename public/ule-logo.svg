@@ -1,0 +1,23 @@
+<svg width="160" height="48" viewBox="0 0 160 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="48" rx="12" fill="#ffffff" />
+  <defs>
+    <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F6A31F" />
+      <stop offset="100%" stop-color="#E17B2D" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3C9C45" />
+      <stop offset="100%" stop-color="#76BE58" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(12 8)">
+    <circle cx="10" cy="10" r="10" fill="#0F2243" />
+    <path d="M10 0.5V-4" stroke="url(#orangeGrad)" stroke-width="2" stroke-linecap="round" transform="translate(0 10)" />
+    <path d="M10 0.5L16 6" stroke="url(#orangeGrad)" stroke-width="2" stroke-linecap="round" transform="translate(0 10)" />
+    <path d="M10 0.5L4 6" stroke="url(#orangeGrad)" stroke-width="2" stroke-linecap="round" transform="translate(0 10)" />
+    <path d="M10 0.5L20 12" stroke="url(#greenGrad)" stroke-width="2" stroke-linecap="round" transform="translate(0 10)" />
+    <path d="M10 0.5L0 12" stroke="url(#greenGrad)" stroke-width="2" stroke-linecap="round" transform="translate(0 10)" />
+  </g>
+  <text x="36" y="18" fill="#0F2243" font-family="Inter, sans-serif" font-size="11" font-weight="700">Université</text>
+  <text x="36" y="32" fill="#0F2243" font-family="Inter, sans-serif" font-size="11">de Labé</text>
+</svg>

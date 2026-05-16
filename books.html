@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gest Biblio - Catalogue des Ouvrages</title>
+    <link rel="stylesheet" href="/src/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] h-full fixed left-0 top-0 bg-primary flex flex-col py-4 px-2 border-r border-outline-variant z-50">
+        <div class="px-4 mb-10">
+            <h1 class="text-xl font-bold text-on-primary">Gest Biblio</h1>
+            <p class="text-xs text-on-primary opacity-60">Administration Centrale</p>
+        </div>
+        <nav class="flex-grow space-y-1">
+            <a href="/dashboard.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm font-medium">Tableau de bord</span>
+            </a>
+            <a href="/students.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">group</span>
+                <span class="text-sm font-medium">Étudiants</span>
+            </a>
+            <a href="/books.html" class="flex items-center gap-3 px-4 py-3 bg-on-primary/10 text-on-primary border-l-4 border-on-primary transition-colors">
+                <span class="material-symbols-outlined">book</span>
+                <span class="text-sm font-medium">Ouvrages</span>
+            </a>
+            <a href="/attendance.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">event_available</span>
+                <span class="text-sm font-medium">Présences</span>
+            </a>
+            <a href="/stats.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">insert_chart</span>
+                <span class="text-sm font-medium">Statistiques</span>
+            </a>
+            <a href="/librarian.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">admin_panel_settings</span>
+                <span class="text-sm font-medium">Interface Bibliothécaire</span>
+            </a>
+        </nav>
+        <div class="mt-auto border-t border-on-primary/10 pt-4 space-y-1">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-sm font-medium">Paramètres</span>
+            </a>
+            <a href="/" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm font-medium">Déconnexion</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="ml-[260px] min-h-screen">
+        <!-- TopAppBar -->
+        <header class="h-[64px] sticky top-0 z-40 bg-surface-container-lowest flex justify-between items-center px-6 border-b border-outline-variant">
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <input type="text" class="bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 w-64 text-sm focus:ring-1 focus:ring-primary outline-none" placeholder="Rechercher un ouvrage...">
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4 text-on-surface-variant">
+                    <button class="hover:text-primary transition-all duration-200">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <button class="hover:text-primary transition-all duration-200">
+                        <span class="material-symbols-outlined">calendar_today</span>
+                    </button>
+                </div>
+                <div class="h-8 w-px bg-outline-variant"></div>
+                <div class="flex items-center gap-3">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-primary">Profil Administrateur</span>
+                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuASAPUu0iMiFt0rBVBkMD6jE74O3Tn5PIl1TZZl7EksFxndJxPCUY_O9fWAi9zrenHj39wd4cz0MPhVRXuU6Lrw5KMUvqP_2O3BhWUc1lzilPGz23LsEz08YJeg18VA-oz17CTPwzaP8dEqv0LQXHTJ-p0MoOxeirJHPSphpBpyuq_ER-p8jBKSDbxF0bMWwzEk5Ei-2hMqGSxuBNYMHLhGWRilr7Wczk7GnSRKSaw1G1moSEyGJJvVWxszt1QrsGjDTESPfbSQtD0n" alt="Avatar" class="w-8 h-8 rounded-full border border-outline-variant">
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Sub-Header -->
+        <div class="bg-white px-6 py-4 border-b border-outline-variant flex justify-between items-center">
+            <nav class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span>Gestion</span>
+                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                <span class="text-primary font-bold">Ouvrages</span>
+            </nav>
+            <div class="flex gap-3">
+                <button class="flex items-center gap-2 px-4 py-2 border border-outline-variant text-[11px] font-bold uppercase tracking-wider rounded hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    Exporter
+                </button>
+                <button class="flex items-center gap-2 px-6 py-2 bg-primary-container text-on-primary text-[11px] font-bold uppercase tracking-wider rounded hover:bg-primary transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Ajouter un ouvrage
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Stats & Quick Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-surface-container-lowest border border-outline-variant p-4 flex items-center gap-4 rounded">
+                    <div class="p-3 bg-secondary-container rounded text-on-secondary-container">
+                        <span class="material-symbols-outlined">library_books</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Total Ouvrages</p>
+                        <p class="text-xl font-bold text-primary">12,840</p>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest border border-outline-variant p-4 flex items-center gap-4 rounded">
+                    <div class="p-3 bg-tertiary-fixed rounded text-on-tertiary-fixed">
+                        <span class="material-symbols-outlined">assignment_return</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Emprunts actifs</p>
+                        <p class="text-xl font-bold text-primary">432</p>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest border border-outline-variant p-4 flex items-center gap-4 rounded">
+                    <div class="p-3 bg-error-container rounded text-error">
+                        <span class="material-symbols-outlined">report_problem</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Retards</p>
+                        <p class="text-xl font-bold text-error">15</p>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest border border-outline-variant p-4 rounded flex flex-col justify-center">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Filtrer par catégorie</p>
+                    <select class="w-full bg-white border border-outline-variant rounded px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary">
+                        <option>Toutes les catégories</option>
+                        <option>Droit Public</option>
+                        <option>Économie et Gestion</option>
+                        <option>Médecine</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-high border-b border-outline-variant">
+                                <th class="p-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Titre de l'ouvrage</th>
+                                <th class="p-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Auteur</th>
+                                <th class="p-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">ISBN</th>
+                                <th class="p-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Catégorie</th>
+                                <th class="p-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Statut</th>
+                                <th class="p-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="hover:bg-surface-container-low transition-colors border-b border-outline-variant">
+                                <td class="p-4 font-bold text-primary">Constitution de la République de Guinée</td>
+                                <td class="p-4">Archives Nationales</td>
+                                <td class="p-4">978-2-342-010</td>
+                                <td class="p-4 text-on-surface-variant">Droit Public</td>
+                                <td class="p-4">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-[10px] font-bold rounded uppercase border border-green-200">Disponible</span>
+                                </td>
+                                <td class="p-4 text-right">
+                                    <div class="flex justify-end gap-3 text-on-surface-variant">
+                                        <button class="hover:text-primary"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+                                        <button class="hover:text-error"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="bg-surface-container-low/30 hover:bg-surface-container-low transition-colors border-b border-outline-variant">
+                                <td class="p-4 font-bold text-primary">Macroéconomie Appliquée</td>
+                                <td class="p-4">Mamadou Bah</td>
+                                <td class="p-4">978-2-123-456</td>
+                                <td class="p-4 text-on-surface-variant">Économie</td>
+                                <td class="p-4">
+                                    <span class="px-2 py-1 bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold rounded uppercase">Emprunté</span>
+                                </td>
+                                <td class="p-4 text-right">
+                                    <div class="flex justify-end gap-3 text-on-surface-variant">
+                                        <button class="hover:text-primary"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+                                        <button class="hover:text-error"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="p-4 bg-surface-container-low border-t border-outline-variant flex justify-between items-center text-xs">
+                    <div class="text-on-surface-variant">Affichage de 1-2 sur 12,840 ouvrages</div>
+                    <div class="flex gap-2">
+                        <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">first_page</span></button>
+                        <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+                        <span class="flex items-center px-4 font-bold">Page 1 / 2568</span>
+                        <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+                        <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">last_page</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

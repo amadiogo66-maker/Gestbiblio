@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gest Biblio - Contrôle des Présences</title>
+    <link rel="stylesheet" href="/src/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] h-full fixed left-0 top-0 bg-primary flex flex-col py-4 px-2 border-r border-outline-variant z-50">
+        <div class="px-4 mb-10">
+            <h1 class="text-xl font-bold text-on-primary">Gest Biblio</h1>
+            <p class="text-xs text-on-primary opacity-60">Administration Centrale</p>
+        </div>
+        <nav class="flex-grow space-y-1">
+            <a href="/dashboard.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm font-medium">Tableau de bord</span>
+            </a>
+            <a href="/students.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">group</span>
+                <span class="text-sm font-medium">Étudiants</span>
+            </a>
+            <a href="/books.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">book</span>
+                <span class="text-sm font-medium">Ouvrages</span>
+            </a>
+            <a href="/attendance.html" class="flex items-center gap-3 px-4 py-3 bg-on-primary/10 text-on-primary border-l-4 border-on-primary transition-colors">
+                <span class="material-symbols-outlined">event_available</span>
+                <span class="text-sm font-medium">Présences</span>
+            </a>
+            <a href="/stats.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">insert_chart</span>
+                <span class="text-sm font-medium">Statistiques</span>
+            </a>
+            <a href="/librarian.html" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">admin_panel_settings</span>
+                <span class="text-sm font-medium">Interface Bibliothécaire</span>
+            </a>
+        </nav>
+        <div class="mt-auto border-t border-on-primary/10 pt-4 space-y-1">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-sm font-medium">Paramètres</span>
+            </a>
+            <a href="/" class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:bg-on-primary/10 hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm font-medium">Déconnexion</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="ml-[260px] min-h-screen">
+        <!-- TopAppBar -->
+        <header class="h-[64px] sticky top-0 z-40 bg-surface-container-lowest flex justify-between items-center px-6 border-b border-outline-variant">
+            <div class="flex items-center gap-6 flex-1">
+                <div class="relative w-full max-w-md">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <input type="text" class="w-full bg-surface-container border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" placeholder="Rechercher une présence...">
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4 text-on-surface-variant">
+                    <button class="hover:text-primary transition-all duration-200">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <button class="hover:text-primary transition-all duration-200">
+                        <span class="material-symbols-outlined">calendar_today</span>
+                    </button>
+                </div>
+                <div class="h-8 w-px bg-outline-variant mx-2"></div>
+                <div class="flex items-center gap-3">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-primary">Profil Administrateur</span>
+                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvAvHXTjvX2aoIEo9_dk5DnUP7Y4hiu44LT-juR7eIo2hNVz8GkLTh0zEltcvAmyVSEE4Vitbo9JjJKFuDXHO8zNamIsLcYVSGqeT62gUQrNGcwhCCBp-i4hdH4rp-frfkHQswQ3bbQjnOUoOWJQ6EpkgHnEdsgUrSMe9KM2D_UAgRcpLXT5s4yNaf68GrKPzT9gGiQaC5mppUyM9IvJqjeCilmg9qWFpL3O_xf0ykTMQ58htL-in5g5T9uNRM-gRocZBtebTu3YuH" alt="Avatar" class="w-8 h-8 rounded-full border border-outline-variant">
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6">
+            <div class="grid grid-cols-12 gap-6">
+                <!-- Entry Control Section -->
+                <section class="col-span-12 lg:col-span-4 space-y-6">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-bold text-primary">Contrôle d'Entrée</h3>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-[10px] font-bold rounded uppercase tracking-wider">En direct</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="aspect-square bg-on-surface/5 border-2 border-dashed border-outline-variant rounded flex flex-col items-center justify-center relative overflow-hidden group">
+                                <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-2">qr_code_scanner</span>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Scanner le QR Code</p>
+                                <div class="absolute top-0 left-0 w-full h-1 bg-primary/40 animate-pulse"></div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Identifiant Étudiant</label>
+                                <div class="flex gap-2">
+                                    <input type="text" class="flex-1 border border-outline-variant bg-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary" placeholder="Ex: MAT-2024-001">
+                                    <button class="bg-primary-container text-on-primary px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded hover:bg-primary transition-colors">Valider</button>
+                                </div>
+                                <p class="text-xs text-on-surface-variant italic">Ou saisissez manuellement le matricule</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded p-6">
+                        <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-4">Aujourd'hui</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-4 bg-surface-container-low rounded border border-outline-variant/30">
+                                <p class="text-[10px] font-bold text-on-surface-variant uppercase">Entrées</p>
+                                <p class="text-3xl font-bold text-primary">142</p>
+                            </div>
+                            <div class="p-4 bg-surface-container-low rounded border border-outline-variant/30">
+                                <p class="text-[10px] font-bold text-on-surface-variant uppercase">Présents</p>
+                                <p class="text-3xl font-bold text-primary">38</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Attendance List -->
+                <section class="col-span-12 lg:col-span-8 space-y-6">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded p-4 flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2 border border-outline-variant px-3 py-1.5 rounded bg-white text-xs">
+                                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                                <span class="font-semibold">24 Mai 2024</span>
+                            </div>
+                            <div class="h-6 w-px bg-outline-variant"></div>
+                            <div class="flex gap-1">
+                                <button class="px-3 py-1 text-[10px] font-bold uppercase bg-primary text-on-primary rounded">Tous</button>
+                                <button class="px-3 py-1 text-[10px] font-bold uppercase text-on-surface-variant hover:bg-surface-container rounded">L1</button>
+                                <button class="px-3 py-1 text-[10px] font-bold uppercase text-on-surface-variant hover:bg-surface-container rounded">L2</button>
+                                <button class="px-3 py-1 text-[10px] font-bold uppercase text-on-surface-variant hover:bg-surface-container rounded">L3</button>
+                            </div>
+                        </div>
+                        <button class="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 border border-primary/20 rounded hover:bg-primary-fixed transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">file_download</span>
+                            Exporter PDF
+                        </button>
+                    </div>
+
+                    <div class="bg-white border border-outline-variant rounded overflow-hidden shadow-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-surface-container-low border-b border-outline-variant">
+                                    <th class="p-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Heure</th>
+                                    <th class="p-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Étudiant</th>
+                                    <th class="p-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Département</th>
+                                    <th class="p-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Action</th>
+                                    <th class="p-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="hover:bg-surface-container-low transition-colors border-b border-outline-variant">
+                                    <td class="p-4 text-primary font-bold">10:45</td>
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center font-bold text-primary text-xs">AB</div>
+                                            <div>
+                                                <p class="font-bold text-on-surface">Alpha BALDÉ</p>
+                                                <p class="text-[10px] text-on-surface-variant">MAT-2023-452</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">Informatique</td>
+                                    <td class="p-4">Entrée</td>
+                                    <td class="p-4 text-right">
+                                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-green-100 text-green-800 border border-green-200">Autorisé</span>
+                                    </td>
+                                </tr>
+                                <tr class="bg-surface-container-low/20 hover:bg-surface-container-low transition-colors border-b border-outline-variant">
+                                    <td class="p-4 text-primary font-bold">10:38</td>
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center font-bold text-primary text-xs">MC</div>
+                                            <div>
+                                                <p class="font-bold text-on-surface">Mariam CAMARA</p>
+                                                <p class="text-[10px] text-on-surface-variant">MAT-2022-129</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">Droit Public</td>
+                                    <td class="p-4">Sortie</td>
+                                    <td class="p-4 text-right">
+                                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-100 text-blue-800 border border-blue-200">Terminé</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="p-4 bg-surface-container-low flex items-center justify-between text-xs">
+                            <p class="text-on-surface-variant">Affichage de 1-10 sur 142 entrées</p>
+                            <div class="flex gap-2">
+                                <button class="p-1 border border-outline-variant rounded hover:bg-white"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+                                <button class="p-1 border border-outline-variant rounded hover:bg-white"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Gest Biblio - Système de Gestion de Bibliothèque",
+  "description": "Une application de gestion de bibliothèque institutionnelle complète avec tableau de bord, registre des étudiants, catalogue d'ouvrages et contrôle des présences.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
