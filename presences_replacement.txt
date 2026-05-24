@@ -1,0 +1,358 @@
+    presences: () => {
+        const { attendances, users } = (window as any).appStore;
+
+        // Ensure global functions exist outside so they refresh on HMR
+        (window as any).filterAttendances = () => {
+            const search = (document.getElementById('searchAttendance') as HTMLInputElement).value.toLowerCase();
+            const roleFilter = (document.getElementById('filterRoleAttendance') as HTMLSelectElement).value;
+            const statusFilter = (document.getElementById('filterStatusAttendance') as HTMLSelectElement).value;
+            const dateFilter = (document.getElementById('filterDateAttendance') as HTMLInputElement).value;
+            
+            const rows = document.querySelectorAll('.attendance-row');
+            rows.forEach((row: any) => {
+                const name = row.getAttribute('data-name').toLowerCase();
+                const role = row.getAttribute('data-role');
+                const status = row.getAttribute('data-status');
+                const date = row.getAttribute('data-date');
+                
+                const matchSearch = name.includes(search);
+                const matchRole = roleFilter === 'all' || role === roleFilter;
+                const matchStatus = statusFilter === 'all' || status === statusFilter;
+                const matchDate = !dateFilter || date === dateFilter;
+                
+                if (matchSearch && matchRole && matchStatus && matchDate) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        };
+
+        (window as any).addManualAttendance = (e: Event) => {
+            e.preventDefault();
+            const fd = new FormData(e.target as HTMLFormElement);
+            const userId = fd.get('userId') as string;
+            if (userId) {
+                (window as any).appStore.recordAttendance(userId);
+            }
+        };
+
+        (window as any).deleteAttendance = (id: string) => {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet enregistrement ?')) {
+                (window as any).appStore.attendances = (window as any).appStore.attendances.filter((a: any) => a.id !== id);
+                (window as any).appStore.save();
+                (window as any).navigate('presences');
+            }
+        };
+
+        (window as any).editAttendance = (id: string) => {
+            const a = (window as any).appStore.attendances.find((x:any) => x.id === id);
+            if (a) {
+                (document.getElementById('editAttId') as HTMLInputElement).value = a.id;
+                
+                const formatForInput = (isoString: string) => {
+                    if (!isoString) return '';
+                    const d = new Date(isoString);
+                    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                    return d.toISOString().slice(0, 16);
+                };
+                
+                (document.getElementById('editAttTimeIn') as HTMLInputElement).value = formatForInput(a.timeIn);
+                (document.getElementById('editAttTimeOut') as HTMLInputElement).value = formatForInput(a.timeOut);
+                (document.getElementById('editAttStatus') as HTMLSelectElement).value = a.status;
+                
+                document.getElementById('attendanceModal')!.classList.remove('hidden');
+            }
+        };
+
+        (window as any).saveAttendanceEdit = (e: Event) => {
+            e.preventDefault();
+            const fd = new FormData(e.target as HTMLFormElement);
+            const id = fd.get('id') as string;
+            const a = (window as any).appStore.attendances.find((x:any) => x.id === id);
+            if (a) {
+                const tIn = fd.get('timeIn') as string;
+                if (tIn) a.timeIn = new Date(tIn).toISOString();
+                
+                const tOut = fd.get('timeOut') as string;
+                if (tOut) {
+                    a.timeOut = new Date(tOut).toISOString();
+                } else {
+                    a.timeOut = undefined;
+                }
+                
+                a.status = fd.get('status') as string;
+                
+                (window as any).appStore.save();
+                document.getElementById('attendanceModal')!.classList.add('hidden');
+                (window as any).navigate('presences');
+            }
+        };
+
+        // Compute Statistics
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todaysAttendances = attendances.filter((a: any) => a.timeIn.startsWith(todayStr));
+        
+        const totalPresent = attendances.filter((a:any) => a.status === 'Présent').length;
+        const studentsPresent = attendances.filter((a:any) => a.status === 'Présent' && users.find((u:any) => u.id === a.userId)?.role === 'Étudiant').length;
+        const profsPresent = attendances.filter((a:any) => a.status === 'Présent' && users.find((u:any) => u.id === a.userId)?.role === 'Professeur').length;
+        
+        const activeUsersToday = todaysAttendances.length;
+        const freqRate = users.length > 0 ? Math.round((activeUsersToday / users.length) * 100) : 0;
+
+        // Render function
+        const renderAttRow = (a: any, idx: number) => {
+            const u = users.find((x:any) => x.id === a.userId);
+            if (!u) return '';
+            
+            const timeInDate = new Date(a.timeIn);
+            const timeOutStr = a.timeOut ? new Date(a.timeOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
+            const timeInStr = timeInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const dateStr = timeInDate.toLocaleDateString();
+            const dateYMD = timeInDate.toISOString().split('T')[0];
+            const isRetard = timeInDate.getHours() >= 9; // Basic logic: retard si arrivée après 9h
+        
+            let statusBadge = '';
+            if (a.status === 'Présent') {
+                if (isRetard) {
+                    statusBadge = '<span class="px-2 py-1 bg-orange-500/10 text-orange-600 border border-orange-500/20 rounded-md text-[10px] font-bold uppercase flex items-center gap-1 w-max"><span class="material-symbols-outlined text-[12px]">schedule</span> Retard</span>';
+                } else {
+                    statusBadge = '<span class="px-2 py-1 bg-green-500/10 text-green-600 border border-green-500/20 rounded-md text-[10px] font-bold uppercase flex items-center gap-1 w-max"><span class="material-symbols-outlined text-[12px]">check_circle</span> Présent</span>';
+                }
+            } else {
+                statusBadge = '<span class="px-2 py-1 bg-surface-container-highest text-on-surface-variant border border-outline-variant rounded-md text-[10px] font-bold uppercase flex items-center gap-1 w-max"><span class="material-symbols-outlined text-[12px]">logout</span> Sortie</span>';
+            }
+        
+            const defaultPhoto = \`https://ui-avatars.com/api/?name=\${encodeURIComponent(u.fullname)}&background=random\`;
+            const photo = u.photoUrl || defaultPhoto;
+            const typeColor = u.role === 'Étudiant' ? 'text-primary bg-primary/10' : (u.role === 'Professeur' ? 'text-secondary bg-secondary/10' : 'text-tertiary bg-tertiary/10');
+            const dept = u.department || u.fonction || u.service || 'Non assigné';
+        
+            return \`
+            <tr class="attendance-row hover:bg-surface-container-lowest transition-colors group"
+                data-name="\${u.fullname.toLowerCase()}" 
+                data-role="\${u.role}" 
+                data-status="\${a.status}" 
+                data-date="\${dateYMD}">
+                
+                <td class="px-4 py-3 font-mono text-xs text-on-surface-variant">#\${String(idx).padStart(4, '0')}</td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center gap-3">
+                        <img src="\${photo}" class="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-sm" />
+                        <div>
+                            <div class="font-bold text-sm text-on-surface">\${u.fullname}</div>
+                            <div class="text-[9px] uppercase font-bold mt-1 w-max px-1.5 py-0.5 rounded \${typeColor}">\${u.role}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-4 py-3 text-xs font-semibold text-on-surface-variant">\${dept}</td>
+                <td class="px-4 py-3 font-mono text-sm font-bold text-primary">\${timeInStr}</td>
+                <td class="px-4 py-3 font-mono text-sm font-bold text-on-surface-variant">\${timeOutStr}</td>
+                <td class="px-4 py-3 text-xs font-medium text-on-surface-variant">\${dateStr}</td>
+                <td class="px-4 py-3">\${statusBadge}</td>
+                <td class="px-4 py-3 text-right">
+                    <div class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        \${a.status === 'Présent' ? \`<button onclick="window.appStore.recordAttendance('\${a.userId}')" title="Marquer Sortie" class="w-8 h-8 rounded-full bg-error/10 text-error hover:bg-error hover:text-white transition-colors flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-[16px]">logout</span></button>\` : ''}
+                        <button onclick="window.editAttendance('\${a.id}')" title="Détails / Modifier" class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+                        <button onclick="window.deleteAttendance('\${a.id}')" title="Supprimer" class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+                    </div>
+                </td>
+            </tr>
+            \`;
+        };
+
+        // Sort attendances: newest first
+        const sortedAttendances = [...attendances].sort((a: any, b: any) => new Date(b.timeIn).getTime() - new Date(a.timeIn).getTime());
+
+        return \`
+        <div class="flex min-h-screen bg-surface-container-lowest">
+            \${getSidebar('presences')}
+            <main class="flex-grow ml-[260px]">
+                \${getTopBar()}
+                <div class="p-6 space-y-8">
+                    <!-- En-tête de page -->
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-primary tracking-tight">Journal des Présences</h2>
+                            <p class="text-sm text-on-surface-variant mt-1">Gérez et suivez le flux des entrées et sorties en temps réel.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.appStore.exportPDF('attendances')" class="flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg text-sm font-bold text-on-surface hover:bg-surface-container transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> Exporter PDF
+                            </button>
+                            <button onclick="window.appStore.exportExcel('attendances')" class="flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg text-sm font-bold text-on-surface hover:bg-surface-container transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-[18px]">table</span> Exporter Excel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Cartes Statistiques -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 border border-outline-variant rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-2xl">groups</span>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Total Présents</p>
+                                <div class="text-2xl font-black text-primary">\${totalPresent}</div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 border border-outline-variant rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-full bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-2xl">school</span>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Étudiants Présents</p>
+                                <div class="text-2xl font-black text-secondary">\${studentsPresent}</div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 border border-outline-variant rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-full bg-tertiary/10 text-tertiary flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-2xl">local_library</span>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Profs. Présents</p>
+                                <div class="text-2xl font-black text-tertiary">\${profsPresent}</div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 border border-outline-variant rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-2xl">monitoring</span>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Entrées Aujourd'hui</p>
+                                <div class="text-2xl font-black text-green-600">\${activeUsersToday} <span class="text-xs text-on-surface-variant font-medium">(\${freqRate}%)</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Colonne de Gauche : Scanner & Ajout Manuel -->
+                        <div class="lg:col-span-4 flex flex-col gap-6">
+                            <!-- Scanner Section -->
+                            <div class="bg-white border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+                                <div class="p-4 border-b border-outline-variant bg-surface-container-lowest">
+                                    <h3 class="font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">qr_code_scanner</span> Scanner Entrée/Sortie</h3>
+                                </div>
+                                <div class="p-5">
+                                    <div id="qr-reader" class="w-full overflow-hidden rounded-xl bg-black text-white aspect-square border border-outline-variant flex items-center justify-center shadow-inner">
+                                        Initialisation caméra...
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant mt-4 text-center">Placez le QR code de la carte devant la caméra pour enregistrer automatiquement le flux.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Ajout Manuel -->
+                            <div class="bg-white border border-outline-variant rounded-2xl shadow-sm overflow-hidden sticky top-24">
+                                <div class="p-4 border-b border-outline-variant bg-surface-container-lowest">
+                                    <h3 class="font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">person_add</span> Enregistrement Manuel</h3>
+                                </div>
+                                <div class="p-5">
+                                    <form onsubmit="window.addManualAttendance(event)" class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-on-surface-variant mb-2">Sélectionner un utilisateur</label>
+                                            <select name="userId" required class="w-full border border-outline-variant rounded-lg px-3 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-surface-container-lowest">
+                                                <option value="">Rechercher et choisir...</option>
+                                                \${users.map((u:any) => \`<option value="\${u.id}">\${u.fullname} (\${u.role})</option>\`).join('')}
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="w-full py-3 bg-primary text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2">
+                                            <span class="material-symbols-outlined text-[18px]">how_to_reg</span> Valider l'entrée/sortie
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Colonne de Droite : Tableau des Présences -->
+                        <div class="lg:col-span-8 flex flex-col">
+                            <div class="bg-white border border-outline-variant rounded-2xl shadow-sm flex-grow flex flex-col overflow-hidden">
+                                
+                                <!-- Toolbar et Filtres -->
+                                <div class="p-4 border-b border-outline-variant bg-surface-container-lowest flex flex-col xl:flex-row gap-4 justify-between items-center">
+                                    <div class="relative flex-grow w-full xl:w-auto">
+                                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                                        <input type="text" id="searchAttendance" onkeyup="window.filterAttendances()" placeholder="Rechercher un nom..." class="w-full border border-outline-variant rounded-lg pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none transition-all bg-white" />
+                                    </div>
+                                    <div class="flex flex-wrap gap-3 w-full xl:w-auto">
+                                        <input type="date" id="filterDateAttendance" onchange="window.filterAttendances()" class="border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none bg-white" />
+                                        <select id="filterRoleAttendance" onchange="window.filterAttendances()" class="border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none font-semibold bg-white">
+                                            <option value="all">Tous Rôles</option>
+                                            <option value="Étudiant">Étudiants</option>
+                                            <option value="Professeur">Professeurs</option>
+                                            <option value="Bibliothécaire">Bibliothécaires</option>
+                                        </select>
+                                        <select id="filterStatusAttendance" onchange="window.filterAttendances()" class="border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none font-semibold bg-white">
+                                            <option value="all">Tous Statuts</option>
+                                            <option value="Présent">Présents</option>
+                                            <option value="Terminé">Sorties</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Tableau Professionnel -->
+                                <div class="overflow-x-auto flex-grow min-h-[500px]">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="bg-surface-container-lowest border-b border-outline-variant text-[10px] uppercase tracking-wider text-on-surface-variant sticky top-0 z-10 shadow-sm">
+                                            <tr>
+                                                <th class="px-4 py-3 font-bold">N°</th>
+                                                <th class="px-4 py-3 font-bold">Nom & Prénom</th>
+                                                <th class="px-4 py-3 font-bold">Département</th>
+                                                <th class="px-4 py-3 font-bold">Heure d'entrée</th>
+                                                <th class="px-4 py-3 font-bold">Heure de sortie</th>
+                                                <th class="px-4 py-3 font-bold">Date</th>
+                                                <th class="px-4 py-3 font-bold">Statut</th>
+                                                <th class="px-4 py-3 font-bold text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-outline-variant">
+                                            \${sortedAttendances.map((a: any, i: number) => renderAttRow(a, sortedAttendances.length - i)).join('')}
+                                            \${sortedAttendances.length === 0 ? '<tr><td colspan="8" class="p-12 text-center text-on-surface-variant"><div class="flex flex-col items-center gap-3"><span class="material-symbols-outlined text-5xl opacity-40">event_busy</span><p class="font-medium">Aucun journal de présence enregistré.</p></div></td></tr>' : ''}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal Edition Présence -->
+        <div id="attendanceModal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col transform transition-all">
+                <div class="p-5 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-primary flex items-center gap-2"><span class="material-symbols-outlined">edit_calendar</span> Détails & Modification</h3>
+                    <button type="button" onclick="document.getElementById('attendanceModal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">close</span></button>
+                </div>
+                <form onsubmit="window.saveAttendanceEdit(event)" class="p-5 space-y-5">
+                    <input type="hidden" id="editAttId" name="id" />
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant mb-1">Heure d'entrée</label>
+                            <input type="datetime-local" id="editAttTimeIn" name="timeIn" required class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none bg-surface-container-lowest" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant mb-1">Heure de sortie</label>
+                            <input type="datetime-local" id="editAttTimeOut" name="timeOut" class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none bg-surface-container-lowest" />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant mb-1">Statut de la présence</label>
+                        <select id="editAttStatus" name="status" class="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none bg-surface-container-lowest font-semibold">
+                            <option value="Présent">En cours (Présent)</option>
+                            <option value="Terminé">Clôturé (Sortie)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant mt-6">
+                        <button type="button" onclick="document.getElementById('attendanceModal').classList.add('hidden')" class="px-5 py-2.5 bg-surface text-on-surface border border-outline-variant rounded-lg font-bold text-sm hover:bg-surface-container transition-colors">Annuler</button>
+                        <button type="submit" class="px-5 py-2.5 bg-primary text-white rounded-lg font-bold text-sm shadow hover:shadow-lg hover:-translate-y-0.5 transition-all">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        \`;
+    },

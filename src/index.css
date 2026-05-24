@@ -53,3 +53,42 @@
 .markdown-body {
   @apply text-on-surface leading-relaxed;
 }
+
+.student-table, .data-table {
+  border-collapse: separate;
+  border-spacing: 0 0.85rem;
+}
+
+.student-table thead tr, .data-table thead tr {
+  border-radius: 1.25rem;
+}
+
+.student-table tbody tr, .data-table tbody tr {
+  background: var(--color-surface-container-lowest);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.student-table tbody tr:hover, .data-table tbody tr:hover {
+  background: var(--color-surface-container-highest);
+  transform: translateY(-1px);
+}
+
+.student-table tbody td:first-child, .data-table tbody td:first-child {
+  border-top-left-radius: 1.25rem;
+  border-bottom-left-radius: 1.25rem;
+}
+
+.student-table tbody td:last-child, .data-table tbody td:last-child {
+  border-top-right-radius: 1.25rem;
+  border-bottom-right-radius: 1.25rem;
+}
+
+.student-table th, .student-table td,
+.data-table th, .data-table td {
+  white-space: nowrap;
+}
+
+.student-table td, .data-table td {
+  padding: 1rem 1rem;
+}

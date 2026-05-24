@@ -1,0 +1,316 @@
+    stats: () => {
+        const { users, books, borrows, attendances } = (window as any).appStore;
+
+        // ── KPIs réels ─────────────────────────────────────────────────
+        const totalUsers     = users.length;
+        const students       = users.filter((u:any) => u.role === 'Étudiant').length;
+        const professors     = users.filter((u:any) => u.role === 'Professeur').length;
+        const librarians     = users.filter((u:any) => u.role === 'Bibliothécaire').length;
+        const totalBooks     = books.reduce((s:number, b:any) => s + (b.quantity || 1), 0);
+        const availableBooks = books.filter((b:any) => b.status === 'Disponible').length;
+        const borrowedBooks  = borrows.filter((b:any) => b.status !== 'Retourné').length;
+        const todayStr       = new Date().toISOString().split('T')[0];
+        const presencesToday = attendances.filter((a:any) => a.timeIn?.startsWith(todayStr)).length;
+        const presentNow     = attendances.filter((a:any) => a.status === 'Présent').length;
+
+        // ── Emprunts par mois (6 derniers) ──────────────────────────────
+        const monthLabels: string[] = [];
+        const borrowsByMonth: number[] = [];
+        const attendByMonth: number[] = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const ym = d.toISOString().slice(0, 7);
+            monthLabels.push(d.toLocaleString('fr-FR', { month: 'short' }).toUpperCase());
+            borrowsByMonth.push(borrows.filter((b:any) => b.borrowDate?.startsWith(ym)).length);
+            attendByMonth.push(attendances.filter((a:any) => a.timeIn?.startsWith(ym)).length);
+        }
+
+        // ── Top 5 livres empruntés ───────────────────────────────────────
+        const bookCount: Record<string, number> = {};
+        borrows.forEach((b:any) => { bookCount[b.bookId] = (bookCount[b.bookId] || 0) + 1; });
+        const topBooks = Object.entries(bookCount)
+            .sort((a: any, b: any) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([bookId, count]) => {
+                const book = books.find((bk:any) => bk.id === bookId);
+                return { title: book?.title || 'Livre inconnu', count };
+            });
+
+        // ── Répartition par rôle ──────────────────────────────────────────
+        const roleData = [students, professors, librarians];
+        const roleLabels = ['Étudiants', 'Professeurs', 'Bibliothécaires'];
+        const roleColors = ['#6750A4', '#B58392', '#58A0A0'];
+
+        // ── Utilisateurs les plus actifs ─────────────────────────────────
+        const userActivity: Record<string, number> = {};
+        borrows.forEach((b:any) => { userActivity[b.userId] = (userActivity[b.userId] || 0) + 1; });
+        const topUsers = Object.entries(userActivity)
+            .sort((a: any, b: any) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([userId, count]) => {
+                const user = users.find((u:any) => u.id === userId);
+                return { name: user?.fullname || 'Utilisateur inconnu', role: user?.role || '', count };
+            });
+
+        // ── Render helper : stat card ────────────────────────────────────
+        const kpiCard = (icon: string, label: string, value: string|number, color: string, sub?: string) => `
+            <div class="bg-white p-5 border border-outline-variant rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition-all hover:-translate-y-0.5 group">
+                <div class="w-13 h-13 w-[52px] h-[52px] rounded-2xl ${color} flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined text-2xl">${icon}</span>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5 truncate">${label}</p>
+                    <div class="text-2xl font-black text-on-surface leading-tight">${value}</div>
+                    ${sub ? `<p class="text-[11px] text-on-surface-variant mt-0.5">${sub}</p>` : ''}
+                </div>
+            </div>`;
+
+        return `
+        <div class="flex min-h-screen bg-surface-container-lowest">
+            ${getSidebar('stats')}
+            <main class="flex-grow ml-[260px]">
+                ${getTopBar()}
+                <div class="p-6 space-y-8">
+
+                    <!-- En-tête -->
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-primary tracking-tight">Tableau de bord analytique</h2>
+                            <p class="text-sm text-on-surface-variant mt-1">Données en temps réel extraites du système.</p>
+                        </div>
+                        <div class="flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-xl shadow-sm text-xs font-bold text-on-surface-variant">
+                            <span class="material-symbols-outlined text-[16px] text-green-500">fiber_manual_record</span>
+                            Données en direct — ${new Date().toLocaleString('fr-FR')}
+                        </div>
+                    </div>
+
+                    <!-- KPI Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        ${kpiCard('group', 'Total Utilisateurs', totalUsers, 'bg-primary/10 text-primary', `${students} étudiants · ${professors} profs`)}
+                        ${kpiCard('menu_book', 'Total Livres', totalBooks, 'bg-secondary/10 text-secondary', `${availableBooks} disponibles`)}
+                        ${kpiCard('swap_horiz', 'Emprunts actifs', borrowedBooks, 'bg-tertiary/10 text-tertiary', `${borrows.length} total`)}
+                        ${kpiCard('co_present', 'Présences aujourd\'hui', presencesToday, 'bg-green-500/10 text-green-600', `${presentNow} actuellement`)}
+                        ${kpiCard('school', 'Étudiants inscrits', students, 'bg-indigo-500/10 text-indigo-600', 'Membres actifs')}
+                        ${kpiCard('local_library', 'Professeurs', professors, 'bg-pink-500/10 text-pink-600', 'Membres actifs')}
+                        ${kpiCard('manage_accounts', 'Bibliothécaires', librarians, 'bg-amber-500/10 text-amber-600', 'Personnel')}
+                        ${kpiCard('auto_stories', 'Livres empruntés', borrowedBooks, 'bg-orange-500/10 text-orange-600', 'En circulation')}
+                    </div>
+
+                    <!-- Graphiques Row 1 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Emprunts & Présences par mois -->
+                        <div class="lg:col-span-2 bg-white border border-outline-variant rounded-2xl shadow-sm p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="font-bold text-on-surface">Activité mensuelle</h3>
+                                    <p class="text-xs text-on-surface-variant mt-0.5">Emprunts et présences sur les 6 derniers mois</p>
+                                </div>
+                                <span class="material-symbols-outlined text-primary">analytics</span>
+                            </div>
+                            <canvas id="monthlyChart" height="200"></canvas>
+                        </div>
+
+                        <!-- Répartition utilisateurs -->
+                        <div class="bg-white border border-outline-variant rounded-2xl shadow-sm p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="font-bold text-on-surface">Répartition membres</h3>
+                                    <p class="text-xs text-on-surface-variant mt-0.5">Par rôle utilisateur</p>
+                                </div>
+                                <span class="material-symbols-outlined text-secondary">donut_large</span>
+                            </div>
+                            <canvas id="roleChart" height="200"></canvas>
+                            <div class="mt-4 space-y-2">
+                                ${roleLabels.map((l, i) => `
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full" style="background:${roleColors[i]}"></div>
+                                        <span class="font-medium text-on-surface-variant">${l}</span>
+                                    </div>
+                                    <span class="font-bold text-on-surface">${roleData[i]}</span>
+                                </div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Graphiques Row 2 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Top livres empruntés -->
+                        <div class="bg-white border border-outline-variant rounded-2xl shadow-sm p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="font-bold text-on-surface">Livres les plus empruntés</h3>
+                                    <p class="text-xs text-on-surface-variant mt-0.5">Top 5 ouvrages</p>
+                                </div>
+                                <span class="material-symbols-outlined text-tertiary">workspace_premium</span>
+                            </div>
+                            ${topBooks.length > 0
+                                ? `<div class="space-y-4">
+                                    ${topBooks.map((b, i) => {
+                                        const pct = topBooks[0].count > 0 ? Math.round((b.count / topBooks[0].count) * 100) : 0;
+                                        const colors = ['bg-primary','bg-secondary','bg-tertiary','bg-indigo-400','bg-pink-400'];
+                                        return `
+                                        <div>
+                                            <div class="flex justify-between items-center mb-1.5">
+                                                <span class="text-xs font-semibold text-on-surface truncate max-w-[200px]" title="${b.title}">#${i+1} ${b.title}</span>
+                                                <span class="text-xs font-black text-on-surface-variant ml-2">${b.count} emprunt${b.count > 1 ? 's' : ''}</span>
+                                            </div>
+                                            <div class="w-full bg-surface-container-highest rounded-full h-2">
+                                                <div class="${colors[i]} h-2 rounded-full transition-all" style="width:${pct}%"></div>
+                                            </div>
+                                        </div>`;
+                                    }).join('')}
+                                  </div>`
+                                : `<div class="flex flex-col items-center justify-center h-40 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-5xl opacity-30 mb-3">auto_stories</span>
+                                    <p class="text-sm">Aucun emprunt enregistré</p>
+                                   </div>`}
+                        </div>
+
+                        <!-- Top utilisateurs actifs -->
+                        <div class="bg-white border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+                            <div class="p-6 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-bold text-on-surface">Utilisateurs les plus actifs</h3>
+                                    <p class="text-xs text-on-surface-variant mt-0.5">Par nombre d'emprunts</p>
+                                </div>
+                                <span class="material-symbols-outlined text-primary">leaderboard</span>
+                            </div>
+                            ${topUsers.length > 0
+                                ? `<table class="w-full text-sm">
+                                    <thead class="text-[10px] uppercase text-on-surface-variant border-b border-outline-variant">
+                                        <tr>
+                                            <th class="px-5 py-3 font-bold text-left">#</th>
+                                            <th class="px-5 py-3 font-bold text-left">Utilisateur</th>
+                                            <th class="px-5 py-3 font-bold text-right">Emprunts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-outline-variant">
+                                        ${topUsers.map((u, i) => {
+                                            const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+                                            const photo = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random&size=64`;
+                                            return `
+                                            <tr class="hover:bg-surface-container-lowest transition-colors">
+                                                <td class="px-5 py-3 text-lg">${medals[i]}</td>
+                                                <td class="px-5 py-3">
+                                                    <div class="flex items-center gap-3">
+                                                        <img src="${photo}" class="w-8 h-8 rounded-full object-cover border border-outline-variant shadow-sm" />
+                                                        <div>
+                                                            <div class="font-semibold text-on-surface text-xs">${u.name}</div>
+                                                            <div class="text-[10px] text-on-surface-variant">${u.role}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-5 py-3 text-right font-black text-primary">${u.count}</td>
+                                            </tr>`;
+                                        }).join('')}
+                                    </tbody>
+                                  </table>`
+                                : `<div class="flex flex-col items-center justify-center h-40 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-5xl opacity-30 mb-3">person_off</span>
+                                    <p class="text-sm">Aucun emprunt enregistré</p>
+                                   </div>`}
+                        </div>
+                    </div>
+
+                    <!-- Tableau Récapitulatif -->
+                    <div class="bg-white border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-on-surface">Historique des emprunts récents</h3>
+                                <p class="text-xs text-on-surface-variant mt-0.5">Les 10 dernières opérations</p>
+                            </div>
+                            <span class="material-symbols-outlined text-on-surface-variant">history</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm whitespace-nowrap">
+                                <thead class="text-[10px] uppercase text-on-surface-variant border-b border-outline-variant bg-surface-container-lowest">
+                                    <tr>
+                                        <th class="px-5 py-3 font-bold text-left">Livre</th>
+                                        <th class="px-5 py-3 font-bold text-left">Emprunteur</th>
+                                        <th class="px-5 py-3 font-bold text-left">Date emprunt</th>
+                                        <th class="px-5 py-3 font-bold text-left">Date retour</th>
+                                        <th class="px-5 py-3 font-bold">Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant">
+                                    ${[...borrows]
+                                        .sort((a:any, b:any) => new Date(b.borrowDate).getTime() - new Date(a.borrowDate).getTime())
+                                        .slice(0, 10)
+                                        .map((b:any) => {
+                                            const book = books.find((bk:any) => bk.id === b.bookId);
+                                            const user = users.find((u:any) => u.id === b.userId);
+                                            const isReturned = b.status === 'Retourné';
+                                            const isLate = !isReturned && b.returnDate && new Date(b.returnDate) < new Date();
+                                            const badge = isReturned
+                                                ? '<span class="px-2 py-0.5 bg-green-500/10 text-green-600 border border-green-500/20 rounded text-[10px] font-bold">Retourné</span>'
+                                                : isLate
+                                                    ? '<span class="px-2 py-0.5 bg-error/10 text-error border border-error/20 rounded text-[10px] font-bold">En retard</span>'
+                                                    : '<span class="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded text-[10px] font-bold">En cours</span>';
+                                            return `
+                                            <tr class="hover:bg-surface-container-lowest transition-colors">
+                                                <td class="px-5 py-3 font-medium text-on-surface max-w-[200px] truncate" title="${book?.title || ''}">${book?.title || 'Livre inconnu'}</td>
+                                                <td class="px-5 py-3 text-on-surface-variant">${user?.fullname || 'Utilisateur inconnu'}</td>
+                                                <td class="px-5 py-3 text-on-surface-variant">${b.borrowDate ? new Date(b.borrowDate).toLocaleDateString('fr-FR') : '—'}</td>
+                                                <td class="px-5 py-3 text-on-surface-variant">${b.returnDate ? new Date(b.returnDate).toLocaleDateString('fr-FR') : '—'}</td>
+                                                <td class="px-5 py-3 text-center">${badge}</td>
+                                            </tr>`;
+                                        }).join('')}
+                                    ${borrows.length === 0 ? '<tr><td colspan="5" class="p-10 text-center text-on-surface-variant"><span class="material-symbols-outlined text-4xl opacity-30 block mb-2">swap_horiz</span>Aucun emprunt enregistré</td></tr>' : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+
+        <script>
+        (function() {
+            const monthData   = ${JSON.stringify(borrowsByMonth)};
+            const attendData  = ${JSON.stringify(attendByMonth)};
+            const mlabels     = ${JSON.stringify(monthLabels)};
+            const rData       = ${JSON.stringify(roleData)};
+            const rLabels     = ${JSON.stringify(roleLabels)};
+            const rColors     = ${JSON.stringify(roleColors)};
+
+            function buildCharts() {
+                // Monthly bar + line chart
+                const mCtx = document.getElementById('monthlyChart');
+                if (mCtx && typeof Chart !== 'undefined') {
+                    new Chart(mCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: mlabels,
+                            datasets: [
+                                { label: 'Emprunts', data: monthData, backgroundColor: 'rgba(103,80,164,0.18)', borderColor: '#6750A4', borderWidth: 2, borderRadius: 6, borderSkipped: false },
+                                { label: 'Présences', data: attendData, type: 'line', tension: 0.45, borderColor: '#58A0A0', backgroundColor: 'rgba(88,160,160,0.1)', borderWidth: 2.5, pointBackgroundColor: '#58A0A0', pointRadius: 4, fill: true }
+                            ]
+                        },
+                        options: { responsive: true, plugins: { legend: { position: 'top', labels: { font: { size: 11, weight: 'bold' }, boxWidth: 12 } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } }
+                    });
+                }
+
+                // Role doughnut
+                const rCtx = document.getElementById('roleChart');
+                if (rCtx && typeof Chart !== 'undefined') {
+                    const total = rData.reduce((s,v) => s+v, 0);
+                    new Chart(rCtx, {
+                        type: 'doughnut',
+                        data: { labels: rLabels, datasets: [{ data: total > 0 ? rData : [1,1,1], backgroundColor: total > 0 ? rColors : ['#e0e0e0','#e0e0e0','#e0e0e0'], borderWidth: 0, hoverOffset: 6 }] },
+                        options: { cutout: '72%', responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ' ' + ctx.label + ': ' + ctx.parsed } } } }
+                    });
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', buildCharts);
+            } else {
+                setTimeout(buildCharts, 80);
+            }
+        })();
+        </script>
+        `;
+    },

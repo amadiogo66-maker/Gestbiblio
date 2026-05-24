@@ -1,0 +1,232 @@
+    home: () => {
+        const { books, users, borrows, attendances } = (window as any).appStore || { books: [], users: [], borrows: [], attendances: [] };
+        const totalBooks = books.reduce((s:number,b:any) => s + (b.quantity||1), 0);
+        const activeNow = attendances.filter((a:any) => a.status === 'Présent').length;
+        const activeBorrows = borrows.filter((b:any) => b.status !== 'Retourné').length;
+
+        const featureCard = (icon:string, title:string, desc:string, color:string) => `
+            <div class="group bg-white border border-outline-variant rounded-2xl p-7 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 ${color} rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity -translate-y-6 translate-x-6"></div>
+                <div class="w-14 h-14 ${color} rounded-2xl flex items-center justify-center mb-5 shadow-sm group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-2xl">${icon}</span>
+                </div>
+                <h4 class="font-bold text-lg text-on-surface mb-2">${title}</h4>
+                <p class="text-sm text-on-surface-variant leading-relaxed">${desc}</p>
+            </div>`;
+
+        const statPill = (val:string, label:string, color:string) => `
+            <div class="text-center px-6">
+                <p class="text-4xl font-black ${color} mb-1">${val}</p>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">${label}</p>
+            </div>`;
+
+        return `
+        <div class="min-h-screen bg-surface-container-lowest text-on-surface font-sans overflow-x-hidden scroll-smooth">
+            <style>
+                @keyframes floatUp { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+                @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+                @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+                .float-anim { animation: floatUp 4s ease-in-out infinite; }
+                .fade-up { animation: fadeInUp 0.8s ease-out both; }
+                .fade-up-d1 { animation-delay: 0.15s; }
+                .fade-up-d2 { animation-delay: 0.3s; }
+                .fade-up-d3 { animation-delay: 0.45s; }
+                .shimmer-bg { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); background-size: 200% 100%; animation: shimmer 3s linear infinite; }
+            </style>
+
+            <!-- HEADER -->
+            <header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-outline-variant/50 shadow-sm transition-all">
+                <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 bg-primary rounded-xl flex items-center justify-center shadow-md shadow-primary/20">
+                            <span class="material-symbols-outlined text-white text-xl">auto_stories</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-black text-primary tracking-tight">Gest Biblio</h1>
+                            <p class="text-[9px] uppercase tracking-[0.25em] text-on-surface-variant font-bold">Université de Labé</p>
+                        </div>
+                    </div>
+                    <nav class="hidden md:flex items-center gap-1">
+                        <a href="#hero" class="px-4 py-2 rounded-lg text-sm font-semibold text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-all">Accueil</a>
+                        <a href="#features" class="px-4 py-2 rounded-lg text-sm font-semibold text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-all">Modules</a>
+                        <a href="#stats-section" class="px-4 py-2 rounded-lg text-sm font-semibold text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-all">Chiffres</a>
+                        <a href="#contact" class="px-4 py-2 rounded-lg text-sm font-semibold text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-all">Contact</a>
+                    </nav>
+                    <button onclick="navigate('dashboard')" class="hidden md:flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">
+                        Ouvrir l'application
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- HERO -->
+            <section id="hero" class="relative pt-36 pb-24 lg:pt-44 lg:pb-36 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-secondary/[0.06] -z-10"></div>
+                <div class="absolute top-16 right-0 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[100px] -z-10"></div>
+                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/15 rounded-full blur-[100px] -z-10"></div>
+
+                <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="space-y-8 fade-up">
+                        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider">
+                            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span></span>
+                            Plateforme v2.0 · Opérationnelle
+                        </div>
+                        <h2 class="text-5xl lg:text-[4.2rem] font-black tracking-tight text-on-surface leading-[1.08]">
+                            La Bibliothèque<br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">Intelligente</span>
+                        </h2>
+                        <p class="text-lg text-on-surface-variant max-w-xl leading-relaxed">
+                            Modernisez la gestion de la Bibliothèque Centrale de l'Université de Labé. Catalogage, emprunts, présences et suivi QR Code — tout en un seul système.
+                        </p>
+                        <div class="flex flex-wrap items-center gap-4 pt-2">
+                            <button onclick="navigate('dashboard')" class="group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-bold text-base shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-1 transition-all">
+                                Explorer la plateforme
+                                <span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </button>
+                            <a href="#features" class="flex items-center gap-2 px-8 py-4 bg-white border-2 border-outline-variant text-on-surface rounded-2xl font-bold text-base hover:border-primary/30 hover:bg-primary/5 transition-all">
+                                <span class="material-symbols-outlined text-primary text-xl">apps</span> Découvrir les modules
+                            </a>
+                        </div>
+                    </div>
+                    <div class="relative hidden lg:flex justify-center fade-up fade-up-d2">
+                        <div class="absolute inset-4 bg-gradient-to-tr from-primary/20 to-secondary/10 rounded-[2rem] transform rotate-2 scale-[1.02] -z-10 blur-sm"></div>
+                        <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1000" alt="Campus" class="rounded-[2rem] shadow-2xl border-2 border-white/30 object-cover h-[560px] w-full" />
+                        <div class="absolute -left-10 bottom-16 bg-white/95 backdrop-blur-xl p-5 rounded-2xl shadow-2xl border border-outline-variant/50 float-anim">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 shadow-sm">
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-on-surface text-sm">Retour validé</p>
+                                    <p class="text-xs text-on-surface-variant">Livre : Macroéconomie</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute -right-6 top-20 bg-white/95 backdrop-blur-xl p-5 rounded-2xl shadow-2xl border border-outline-variant/50 float-anim" style="animation-delay:1.5s">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+                                    <span class="material-symbols-outlined">qr_code_scanner</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-on-surface text-sm">Scan détecté</p>
+                                    <p class="text-xs text-on-surface-variant">Entrée enregistrée</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LIVE STATS BANNER -->
+            <section id="stats-section" class="relative py-12 bg-gradient-to-r from-primary via-secondary to-primary overflow-hidden">
+                <div class="absolute inset-0 shimmer-bg"></div>
+                <div class="max-w-5xl mx-auto flex flex-wrap justify-center gap-8 relative z-10 text-white">
+                    ${statPill(totalBooks > 0 ? String(totalBooks) : '12k+', 'Ouvrages', 'text-white')}
+                    ${statPill(String(users.length || '2.5k+'), 'Utilisateurs', 'text-white')}
+                    ${statPill(String(activeBorrows), 'Emprunts actifs', 'text-white')}
+                    ${statPill(String(activeNow), 'Présents maintenant', 'text-white')}
+                </div>
+            </section>
+
+            <!-- FEATURES / MODULES -->
+            <section id="features" class="py-28 bg-surface-container-lowest">
+                <div class="max-w-7xl mx-auto px-6">
+                    <div class="text-center max-w-2xl mx-auto mb-16 fade-up">
+                        <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-3">Modules intégrés</p>
+                        <h2 class="text-4xl font-black text-on-surface mb-4">Tout ce dont vous avez besoin</h2>
+                        <p class="text-on-surface-variant text-base">Un ensemble complet d'outils pour la gestion moderne des bibliothèques universitaires.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        ${featureCard('qr_code_scanner', 'QR Intelligent', 'Scan ultra-rapide des cartes par webcam pour les entrées et sorties automatisées.', 'bg-primary/10 text-primary')}
+                        ${featureCard('library_books', 'Catalogage', 'Gestion complète des livres avec disponibilité en temps réel et catégories.', 'bg-secondary/10 text-secondary')}
+                        ${featureCard('swap_horiz', 'Emprunts & Retours', 'Suivi précis des emprunts, dates d\'échéance et détection automatique des retards.', 'bg-tertiary/10 text-tertiary')}
+                        ${featureCard('analytics', 'Statistiques', 'Tableaux de bord interactifs avec graphiques et exports PDF / Excel.', 'bg-green-500/10 text-green-600')}
+                        ${featureCard('group', 'Inscriptions', 'Enregistrement des étudiants et professeurs avec photo et QR code généré.', 'bg-indigo-500/10 text-indigo-600')}
+                        ${featureCard('co_present', 'Présences', 'Journal en temps réel des entrées et sorties avec filtres avancés.', 'bg-pink-500/10 text-pink-600')}
+                        ${featureCard('inbox', 'Demandes', 'Gestion des demandes d\'inscription et de services avec suivi de statut.', 'bg-amber-500/10 text-amber-600')}
+                        ${featureCard('person', 'Profils', 'Fiches utilisateurs complètes avec historique et carte QR d\'accès.', 'bg-orange-500/10 text-orange-600')}
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY US -->
+            <section class="py-28 bg-white">
+                <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    <div class="grid grid-cols-2 gap-5 relative fade-up">
+                        <div class="absolute inset-0 bg-primary/5 rounded-full blur-[80px] -z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=600" class="rounded-2xl shadow-lg mt-10 object-cover h-60 w-full border border-outline-variant/30" />
+                        <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=600" class="rounded-2xl shadow-lg object-cover h-60 w-full border border-outline-variant/30" />
+                    </div>
+                    <div class="fade-up fade-up-d1">
+                        <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-3">Avantages</p>
+                        <h2 class="text-4xl font-black text-on-surface mb-8">Pourquoi Gest Biblio ?</h2>
+                        <div class="space-y-7">
+                            <div class="flex gap-5 group">
+                                <div class="mt-0.5 w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm"><span class="material-symbols-outlined">bolt</span></div>
+                                <div><h4 class="font-bold text-lg mb-1">Automatisation</h4><p class="text-on-surface-variant text-sm leading-relaxed">Validez un emprunt en 2 clics ou scannez un QR code instantanément.</p></div>
+                            </div>
+                            <div class="flex gap-5 group">
+                                <div class="mt-0.5 w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm"><span class="material-symbols-outlined">security</span></div>
+                                <div><h4 class="font-bold text-lg mb-1">Fiabilité</h4><p class="text-on-surface-variant text-sm leading-relaxed">Archivage sécurisé des historiques avec sauvegardes automatiques.</p></div>
+                            </div>
+                            <div class="flex gap-5 group">
+                                <div class="mt-0.5 w-12 h-12 rounded-2xl bg-tertiary/10 text-tertiary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm"><span class="material-symbols-outlined">insights</span></div>
+                                <div><h4 class="font-bold text-lg mb-1">Vision Stratégique</h4><p class="text-on-surface-variant text-sm leading-relaxed">Des statistiques avancées pour optimiser le budget et la gestion.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="py-20 bg-gradient-to-br from-primary to-secondary relative overflow-hidden">
+                <div class="absolute inset-0 shimmer-bg"></div>
+                <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
+                    <h2 class="text-4xl font-black text-white mb-4">Prêt à commencer ?</h2>
+                    <p class="text-white/80 text-lg mb-8">Accédez au tableau de bord et gérez votre bibliothèque dès maintenant.</p>
+                    <button onclick="navigate('dashboard')" class="inline-flex items-center gap-3 px-10 py-4 bg-white text-primary rounded-2xl font-bold text-lg shadow-2xl hover:-translate-y-1 hover:shadow-white/30 transition-all">
+                        Accéder au portail <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- FOOTER -->
+            <footer id="contact" class="bg-[#0a0f1a] text-slate-400 pt-20 pb-8">
+                <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+                    <div class="md:col-span-2">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-11 h-11 bg-primary rounded-xl flex items-center justify-center shadow-md"><span class="material-symbols-outlined text-white">auto_stories</span></div>
+                            <div><h3 class="text-white font-black text-xl">Gest Biblio</h3><p class="text-[10px] uppercase tracking-widest text-slate-500">Université de Labé</p></div>
+                        </div>
+                        <p class="text-sm text-slate-500 max-w-md mb-6 leading-relaxed">Plateforme officielle de gestion pour la Bibliothèque Centrale de l'Université de Labé. Moderniser l'accès au savoir.</p>
+                        <div class="flex gap-3">
+                            <a href="#" class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors text-slate-400 hover:text-white"><span class="material-symbols-outlined text-lg">language</span></a>
+                            <a href="#" class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors text-slate-400 hover:text-white"><span class="material-symbols-outlined text-lg">mail</span></a>
+                            <a href="#" class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors text-slate-400 hover:text-white"><span class="material-symbols-outlined text-lg">call</span></a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-5 text-sm uppercase tracking-wider">Contact</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex items-center gap-2.5"><span class="material-symbols-outlined text-sm text-primary">location_on</span>Campus de Labé, Bâtiment Central</li>
+                            <li class="flex items-center gap-2.5"><span class="material-symbols-outlined text-sm text-primary">email</span>contact-biblio@univ-labe.gn</li>
+                            <li class="flex items-center gap-2.5"><span class="material-symbols-outlined text-sm text-primary">phone</span>+224 622 00 00 00</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-5 text-sm uppercase tracking-wider">Liens Rapides</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" onclick="navigate('dashboard')" class="hover:text-white transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-xs">chevron_right</span>Portail</a></li>
+                            <li><a href="#" onclick="navigate('books')" class="hover:text-white transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-xs">chevron_right</span>Catalogage</a></li>
+                            <li><a href="#" onclick="navigate('stats')" class="hover:text-white transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-xs">chevron_right</span>Statistiques</a></li>
+                            <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-xs">chevron_right</span>Support Technique</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-slate-800/60 text-xs text-slate-600 flex flex-col md:flex-row justify-between items-center gap-2">
+                    <p>&copy; 2026 Université de Labé · Gest Biblio. Tous droits réservés.</p>
+                    <p>Projet Universitaire d'Excellence · Conçu avec passion</p>
+                </div>
+            </footer>
+        </div>
+        `;
+    },
